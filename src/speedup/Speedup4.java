@@ -1,25 +1,25 @@
 package speedup;
 
-import hwj1.BinaryTreeAdderImpl;
+import hwj2.BinaryTreeAdderLimitedBuffer;
+import hwj4.BinaryTreeAdderJ8;
 import tree.*;
 
-public class Speedup1 {
+public class Speedup4 {
 
 	public static void main(String[] args) {
 		Node tree;
-		int serialSum, concurrentSum;
+		int serialSum, concurrentSum ;
 		double startTime, endTime, serialTime, concurrentTime;
 		BinaryTreeAdder serialAdder, concurrentAdder;
-		int nProc = java.lang.Runtime.getRuntime().availableProcessors();
-		concurrentAdder = new BinaryTreeAdderImpl(nProc);
-		serialAdder = new BinaryTreeAdderImpl(1);
+		serialAdder = new BinaryTreeAdderLimitedBuffer(1);
+		concurrentAdder = new BinaryTreeAdderJ8();
+		
+//		System.out.println("WARM UP");
+//		tree = TreeUtility.balancedTree(14);
+//		concurrentAdder.computeOnerousSum(tree);
+//		concurrentAdder.computeOnerousSum(tree);
 
-		System.out.println("WARM UP");
-		tree = TreeUtility.balancedTree(14);
-		concurrentAdder.computeOnerousSum(tree);
-		concurrentAdder.computeOnerousSum(tree);
-
-		int[] heights = {10,14,17};
+		int[] heights = {2};
 
 		for(int i : heights) {
 			System.out.println("Balanced Tree, height = "+i);

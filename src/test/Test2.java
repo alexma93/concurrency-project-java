@@ -13,11 +13,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.*;
 
-import hwj1.BinaryTreeAdderImpl;
 import hwj1.OnerousSumRun;
+import hwj2.BinaryTreeAdderLimitedBuffer;
 import tree.*;
 
-public class Test1 {
+public class Test2 {
 
 	Node singleNode, simpleTree, balancedOrderedTree;
 	BlockingQueue<Node> buffer;
@@ -37,7 +37,7 @@ public class Test1 {
 		serialOnerousSum = new OnerousSumRun(buffer,1,new AtomicInteger());
 		counter = new AtomicInteger();
 		executor = Executors.newFixedThreadPool(nProc); 
-		adder = new BinaryTreeAdderImpl(nProc);
+		adder = new BinaryTreeAdderLimitedBuffer(nProc);
 	}
 	
 	@Test

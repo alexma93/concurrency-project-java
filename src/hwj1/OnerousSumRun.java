@@ -1,20 +1,21 @@
-package tree;
+package hwj1;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import tree.FakeProcessor;
+import tree.Node;
+
 public class OnerousSumRun implements Callable<Integer> {
 
 	private BlockingQueue<Node> buffer;
-	private int numProc; //TODO: gestire che concludono tutti
+	private int numProc; //per gestire che concludono tutti
 	private AtomicInteger counter;
-	private int quanti; //TODO: toglierlo
 
 	public OnerousSumRun(BlockingQueue<Node> buff,int n,AtomicInteger c) {
 		this.buffer = buff;
 		this.numProc = n;
 		this.counter = c;
-		quanti = 0;
 	}
 
 	//TODO: probabile devo togliere le wait e notify. servono per svegliare i thread quando in realta'  
@@ -41,7 +42,6 @@ public class OnerousSumRun implements Callable<Integer> {
 					}
 					FakeProcessor proc = new FakeProcessor(2000);
 					sum += proc.onerousFunction(root.getValue());
-					quanti++;
 				}
 			}
 			else {

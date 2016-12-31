@@ -3,6 +3,7 @@ package hwj4;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
 import tree.Node;
@@ -45,7 +46,9 @@ public class BinaryTreeSpliterator implements Spliterator<Node> {
 			this.list.add(sin);
 			//this.list.remove(this.root); //non mi calcola i nodi interni perche' qui li rimuovo
 			this.root = sin;
-			return new BinaryTreeSpliterator(d,this.list);
+			BlockingQueue<Node> queue = new LinkedBlockingQueue<>();
+			queue.add(d);
+			return new BinaryTreeSpliterator(d,queue);
 		}
 		return null;
 	}

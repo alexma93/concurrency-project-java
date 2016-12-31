@@ -19,7 +19,7 @@ public class Speedup4 {
 //		concurrentAdder.computeOnerousSum(tree);
 //		concurrentAdder.computeOnerousSum(tree);
 
-		int[] heights = {13};
+		int[] heights = {10};
 
 		for(int i : heights) {
 			System.out.println("Balanced Tree, height = "+i);

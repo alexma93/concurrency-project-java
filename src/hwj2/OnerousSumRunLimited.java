@@ -3,74 +3,70 @@ import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
-import tree.*;
+
+import treeAdder.*;
 
 public class OnerousSumRunLimited implements Callable<Integer> {
 
 	private BlockingDeque<Node> buffer;
-	private int numProc; //per gestire che concludono tutti
+	//per gestire che concludono tutti, come in hwj1
+	private int numProc; 
 	private AtomicInteger counter;
-	private List<BlockingDeque<Node>> list;
-	private int quanti; //TODO
+	// lista contenente tutte le deque
+	private List<BlockingDeque<Node>> dequeList;
 
-	public OnerousSumRunLimited(BlockingDeque<Node>buffer,int n,AtomicInteger c,List<BlockingDeque<Node>> list) {
+	public OnerousSumRunLimited(BlockingDeque<Node>buffer,int n,AtomicInteger c,List<BlockingDeque<Node>> dequeList) {
 		this.buffer = buffer;
 		this.numProc = n;
 		this.counter = c;
-		this.list = list;
-		quanti = 0;
+		this.dequeList = dequeList;
 	}
 
-	//TODO: probabile devo togliere le wait e notify. servono per svegliare i thread quando in realta'  
-	// non e' vuoto. i thread devono dormire perche' devo evitare attese attive
-	//TODO: ogni tanto si blocca. i break sono orribili
+
 	@Override
 	public Integer call() throws Exception {
 		int sum = 0;
-		boolean notEmpty = false;
-		boolean incremented = false;
+		boolean incremented = false; // se ho aumentato il contatore
+
+		//finche' non hanno concluso tutti i worker thread
 		while(this.counter.get()<this.numProc) {
-			notEmpty = false;
+			if(incremented) {
+				incremented = false;
+				this.counter.decrementAndGet();
+			}
 			if(!this.buffer.isEmpty()) {
-				if(incremented) {
-					incremented = false;
-					this.counter.decrementAndGet();
-				}
-				Node root = this.buffer.poll(); //ritorna null se e' vuota
+				Node root = this.buffer.pollLast(); //ritorna null se e' vuota
 				sum += depthSum(root);
-
 			}
-			else {
-				while (!notEmpty) {
-					if (otherBuffersEmpty()) {
-						synchronized (this.counter) {
-							this.counter.incrementAndGet();
-							if(this.counter.get()==this.numProc) {
-								this.counter.notifyAll();
-								return sum;
-							} else {
-								incremented = true;
-								this.counter.wait();
-								break;
-							}
-						}
-					}
-					else { //work stealing
-						notEmpty = workStealing();
+			// provo a rubare del lavoro dagli altri
+			else if (!workStealing())
+				// se non ci sono riuscito e gli altri buffer erano vuoti
+				synchronized (this.counter) {
+					this.counter.incrementAndGet();
+					// se abbiamo tutti terminato, lo segnalo a tutti e terminiamo
+					if(this.counter.get()==this.numProc)
+						this.counter.notifyAll();
+					// altrimenti mi metto in attesa o che un buffer si riempia o che tutti terminino
+					else {
+						incremented = true;
+						this.counter.wait();
 					}
 				}
-
-			}
 		}
 		return sum;
 	}
 
+	/* calcola una somma a partire da un nodo root:
+	 * se il nodo ha entrambi i figli, scendo verso sinistra e inserisco il destro nel buffer
+	 * se ne ha solo uno, lo inserisco nel buffer e elaboro il nodo root.
+	 */
 	public int depthSum(Node root) {
 		int sum = 0;
 		if(root!=null) {
-			if(root.getSx()!=null) {
+			if(root.getSx()!=null)
 				if(root.getDx()!=null) {
 					this.buffer.offer(root.getDx());
+					// segnalo che il buffer non e' piu' vuoto
 					synchronized (this.counter) {counter.notify();}
 					sum += depthSum(root.getSx());
 				}
@@ -78,27 +74,19 @@ public class OnerousSumRunLimited implements Callable<Integer> {
 					this.buffer.offer(root.getSx());
 					synchronized (this.counter) {counter.notify();}
 				}
-			}
 			else if(root.getDx()!=null) {
-				sum += depthSum(root.getDx());
+				this.buffer.offer(root.getDx());
+				synchronized (this.counter) {counter.notify();}
 			}
 			FakeProcessor proc = new FakeProcessor(2000);
 			sum += proc.onerousFunction(root.getValue());
-			quanti++;
 		}
 		return sum;
 	}
 
-
-	public boolean otherBuffersEmpty() {
-		for (BlockingDeque<Node> dek : this.list)
-			if(dek!=this.buffer && !dek.isEmpty())
-				return false;
-		return true;
-	}
-
+	// true se e' riuscito a rubare da un'altra deque
 	public boolean workStealing() {
-		for (BlockingDeque<Node> dek : this.list)
+		for (BlockingDeque<Node> dek : this.dequeList)
 			if(dek!=this.buffer && !dek.isEmpty()) {
 				Node n = dek.pollFirst();
 				if(n!=null) {

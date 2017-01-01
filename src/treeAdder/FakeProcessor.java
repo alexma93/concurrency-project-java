@@ -1,4 +1,4 @@
-package tree;
+package treeAdder;
 
 public class FakeProcessor implements OnerousProcessor {
 	public final static int MIN_COUNT = 1000;

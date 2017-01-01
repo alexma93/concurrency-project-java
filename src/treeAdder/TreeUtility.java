@@ -1,8 +1,11 @@
-package tree;
+package treeAdder;
 
+/*
+ * classe per creare alberi
+ */
 public class TreeUtility {
 
-	//solo la radice => height = 0
+	// albero binario bilanciato data l'altezza
 	public static Node balancedTree(int height) {
 		Node root = null;
 		if(height>=0) {
@@ -13,6 +16,8 @@ public class TreeUtility {
 		}
 		return root;
 	}
+	
+	//albero sbilanciato verso sinistra
 	public static Node unbalancedLeftTree(int height) {
 		Node root = null;
 		if(height>=0) {
@@ -24,6 +29,7 @@ public class TreeUtility {
 		return root;
 	}
 	
+	// albero sbilanciato verso destra
 	public static Node unbalancedRightTree(int height) {
 		Node root = null;
 		if(height>=0) {
@@ -35,11 +41,12 @@ public class TreeUtility {
 		return root;
 	}
 	
+	// creo un albero con valori nei nodi da 1 in poi
 	public static Node balancedOrderedTree(int height) {
 		return bODSupport(height,new int[]{1});
 	}
 	
-	private static Node bODSupport(int height, int[] val) {//TODO: orribile
+	private static Node bODSupport(int height, int[] val) {
 		Node root = null;
 		if(height>=0) {
 			Node sx,dx;
@@ -52,7 +59,7 @@ public class TreeUtility {
 		return root;
 	}
 
-	public static void printTree(Node n) {
+	/* public static void printTree(Node n) {
 		if(n!=null) {
 			System.out.print(" ["+n.getValue());
 			if(n.getSx()!=null) {
@@ -65,5 +72,5 @@ public class TreeUtility {
 			}
 			System.out.print("]");
 		}
-	}
+	} */
 }

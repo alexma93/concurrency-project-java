@@ -1,4 +1,4 @@
-package tree;
+package treeAdder;
 
 public class simpleNode implements Node {
 	private Node sx;
@@ -16,6 +16,7 @@ public class simpleNode implements Node {
 		this.dx = dx;
 		this.value = val;
 	}
+	
 	@Override
 	public Node getSx() {
 		return this.sx;

@@ -9,9 +9,10 @@ import org.junit.*;
 
 import hwj3.BinaryTreeAdderForkJoin;
 import hwj3.OnerousSumForkJoin;
+import hwj4.BinaryTreeAdderJ8;
 import treeAdder.*;
 
-public class Test3 {
+public class Test4 {
 
 	Node singleNode, simpleTree, balancedOrderedTree;
 	BlockingQueue<Node> buffer;
@@ -25,7 +26,7 @@ public class Test3 {
 		balancedOrderedTree = TreeUtility.balancedOrderedTree(4);
 		buffer = new LinkedBlockingQueue<Node>();
 		pool = new ForkJoinPool(); 
-		adder = new BinaryTreeAdderForkJoin();
+		adder = new BinaryTreeAdderJ8();
 	}
 	
 	@Test

@@ -1,8 +1,8 @@
 package hwj3;
 import java.util.concurrent.RecursiveTask;
 
-import tree.FakeProcessor;
-import tree.Node;
+import treeAdder.FakeProcessor;
+import treeAdder.Node;
 
 public class OnerousSumForkJoin extends RecursiveTask<Integer> {
 

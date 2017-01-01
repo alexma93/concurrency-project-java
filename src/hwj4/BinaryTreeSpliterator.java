@@ -4,7 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Consumer;
-import tree.Node;
+
+import treeAdder.Node;
 
 public class BinaryTreeSpliterator implements Spliterator<Node> {
 	private Node root; //nodo corrente, sul quale si prova a splittare

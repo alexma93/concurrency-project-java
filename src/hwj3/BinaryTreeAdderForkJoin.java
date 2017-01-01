@@ -1,8 +1,8 @@
 package hwj3;
 import java.util.concurrent.ForkJoinPool;
 
-import tree.BinaryTreeAdder;
-import tree.Node;
+import treeAdder.BinaryTreeAdder;
+import treeAdder.Node;
 
 public class BinaryTreeAdderForkJoin implements BinaryTreeAdder {
 

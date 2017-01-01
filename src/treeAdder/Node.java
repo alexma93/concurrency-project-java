@@ -1,4 +1,4 @@
-package tree;
+package treeAdder;
 
 public interface Node {
 	Node getSx(); //null se non esiste figlio sinistro

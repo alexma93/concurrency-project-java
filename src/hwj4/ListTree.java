@@ -2,9 +2,8 @@ package hwj4;
 
 import java.util.LinkedList;
 import java.util.Spliterator;
-import java.util.concurrent.LinkedBlockingQueue;
 
-import tree.*;
+import treeAdder.*;
 
 public class ListTree extends LinkedList<Node> {
 

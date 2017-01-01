@@ -3,13 +3,14 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import tree.FakeProcessor;
-import tree.Node;
+import treeAdder.FakeProcessor;
+import treeAdder.Node;
 
 public class OnerousSumRun implements Callable<Integer> {
 
 	private BlockingQueue<Node> buffer;
-	private int numProc; //per gestire che concludono tutti
+	// so che tutti i thread hanno concluso, quando counter = numProc. counter e' condiviso
+	private int numProc; 
 	private AtomicInteger counter;
 
 	public OnerousSumRun(BlockingQueue<Node> buff,int n,AtomicInteger c) {
@@ -25,15 +26,17 @@ public class OnerousSumRun implements Callable<Integer> {
 		int sum = 0;
 		boolean incremented = false;
 		while(this.counter.get()<this.numProc) {
+			// se credevo di aver finito, ma mi hanno svegliato e non abbiamo finito tutti, diminuisco il contatore
+			if(incremented) {
+				incremented = false;
+				this.counter.decrementAndGet();
+			}
 			if(!this.buffer.isEmpty()) {
-				if(incremented) {
-					incremented = false;
-					this.counter.decrementAndGet();
-				}
-				Node root = this.buffer.poll(); //ritorna null se e' vuota
+				Node root = this.buffer.poll(); //ritorna null se e' vuoto
 				if(root!=null) {
 					if(root.getSx()!=null) {
 						this.buffer.offer(root.getSx());
+						// segnalo che il buffer non e' piu' vuoto
 						synchronized (this.counter) {this.counter.notify();}
 					}
 					if(root.getDx()!=null) {
@@ -44,13 +47,13 @@ public class OnerousSumRun implements Callable<Integer> {
 					sum += proc.onerousFunction(root.getValue());
 				}
 			}
-			else {
-				synchronized (this.counter) {
-					this.counter.incrementAndGet();
-					if(this.counter.get()==this.numProc) {
-						this.counter.notifyAll();
-						break;
-					}
+			/* se il buffer e' vuoto, e tutti sono in attesa perche' lo hanno visto vuoto, li sveglio tutti  e terminiamo.
+			 * altrimenti mi metto in attesa che il buffer si riempia o che tutti abbiano terminato */
+			else synchronized (this.counter) {
+				this.counter.incrementAndGet();
+				if(this.counter.get()==this.numProc)
+					this.counter.notifyAll();
+				else {
 					incremented = true;
 					this.counter.wait();
 				}

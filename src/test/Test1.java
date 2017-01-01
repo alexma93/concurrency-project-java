@@ -15,7 +15,7 @@ import org.junit.*;
 
 import hwj1.BinaryTreeAdderImpl;
 import hwj1.OnerousSumRun;
-import tree.*;
+import treeAdder.*;
 
 public class Test1 {
 
@@ -55,13 +55,14 @@ public class Test1 {
 	
 	@Test
 	public void concurrentSumSingleNode() throws Exception {
-		Future<Integer> f;
 		buffer.offer(singleNode);
 		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
-		for(int i=0; i<nProc; i++) {
-			f = executor.submit(new OnerousSumRun(buffer,nProc,counter));
-			futureResults.add(f);
-		}
+		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
+		for(int i=0; i<nProc; i++)
+			tasks.add(new OnerousSumRun(buffer,nProc,counter));
+		
+		// the execution order is controlled by the JVM Thread Pool
+		futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -81,13 +82,14 @@ public class Test1 {
 	
 	@Test
 	public void concurrentSumSimpleTree() throws Exception {
-		Future<Integer> f;
 		buffer.offer(simpleTree);
 		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
-		for(int i=0; i<nProc; i++) {
-			f = executor.submit(new OnerousSumRun(buffer,nProc,counter));
-			futureResults.add(f);
-		}
+		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
+		for(int i=0; i<nProc; i++)
+			tasks.add(new OnerousSumRun(buffer,nProc,counter));
+		
+		// the execution order is controlled by the JVM Thread Pool
+		futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -107,13 +109,13 @@ public class Test1 {
 	
 	@Test
 	public void concurrentSumOrderedTree() throws Exception {
-		Future<Integer> f;
 		buffer.offer(balancedOrderedTree);
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
-		for(int i=0; i<nProc; i++) {
-			f = executor.submit(new OnerousSumRun(buffer,nProc,counter));
-			futureResults.add(f);
-		}
+		List<Future<Integer>> futureResults = new ArrayList<>(nProc);	
+		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
+		for(int i=0; i<nProc; i++)
+			tasks.add(new OnerousSumRun(buffer,nProc,counter));
+		
+		futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -121,6 +123,80 @@ public class Test1 {
 		executor.shutdown();
 		assertEquals(sum,31*32/2);
 	}
+	
+	@Test
+	public void ifBufferEmptyThreadWait() throws Exception {
+		Future<Integer> f1;
+		boolean asleep, awake;
+		
+		f1 = executor.submit(new OnerousSumRun(buffer,2,counter));
+		int sum = 0;
+		
+		Thread.sleep(50);
+		buffer.offer(balancedOrderedTree);
+		Thread.sleep(50);
+		asleep = this.buffer.isEmpty();
+		
+		synchronized (this.counter) { this.counter.notify(); }
+		Thread.sleep(50);
+		awake = this.buffer.isEmpty();
+		
+		
+		synchronized (this.counter) { 
+			this.counter.incrementAndGet();
+			this.counter.notify(); 
+			}
+		sum += f1.get();
+		executor.shutdown();
+		
+		assertFalse(asleep);
+		assertTrue(awake);
+		assertEquals(sum,31*32/2);
+	}
+	
+	@Test
+	public void theLastWakeEveryone() throws Exception {
+		Future<Integer> f,f4;
+		
+		List<Future<Integer>> futureResults = new ArrayList<>(3);	
+		for(int i=0; i<3; i++) {
+			f = executor.submit(new OnerousSumRun(buffer,4,counter));
+			futureResults.add(f);
+		}
+		
+		Thread.sleep(50);
+		buffer.offer(singleNode);
+		
+		f4 = executor.submit(new OnerousSumRun(buffer,4,counter));
+		Thread.sleep(50);
+		for(Future<Integer> fu: futureResults)
+			assertTrue(fu.isDone());
+		assertTrue(f4.isDone());
+		
+		executor.shutdown();
+	}
+	
+	// un thread aggiunge un nodo nel buffer e sveglia un altro thread
+	@Test
+	public void newNodeInBufferWakeUpSomeone() throws Exception {
+		Future<Integer> f;
+
+		f = executor.submit(new Callable<Integer>() {
+			public Integer call() throws Exception {
+				synchronized (counter) {counter.wait();}
+				return 1;
+			}
+		});
+		//un nodo con un solo figlio
+		buffer.offer(new simpleNode(1,new simpleNode(1),null));
+
+		executor.submit(new OnerousSumRun(buffer,2,counter));
+		Thread.sleep(50);
+		assertEquals((int)f.get(),1);
+		
+		executor.shutdownNow();
+	}
+	
 	
 	@Test
 	public void binaryTreeAdderOrderedTree() throws Exception {

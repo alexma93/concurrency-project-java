@@ -14,16 +14,16 @@ public class Speedup4 {
 		serialAdder = new BinaryTreeAdderLimitedBuffer(1);
 		concurrentAdder = new BinaryTreeAdderJ8();
 		
-//		System.out.println("WARM UP");
-//		tree = TreeUtility.balancedTree(14);
-//		concurrentAdder.computeOnerousSum(tree);
-//		concurrentAdder.computeOnerousSum(tree);
+		System.out.println("WARM UP");
+		tree = TreeUtility.balancedTree(14);
+		concurrentAdder.computeOnerousSum(tree);
+		concurrentAdder.computeOnerousSum(tree);
 
-		int[] heights = {10};
+		int[] heights = {13};
 
 		for(int i : heights) {
 			System.out.println("Balanced Tree, height = "+i);
-			tree = TreeUtility.balancedTree(i);
+			tree = TreeUtility.balancedOrderedTree(i);
 			
 			startTime = System.currentTimeMillis();
 			concurrentSum = concurrentAdder.computeOnerousSum(tree);

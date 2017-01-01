@@ -1,8 +1,6 @@
 package hwj4;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import tree.BinaryTreeAdder;
 import tree.FakeProcessor;
 import tree.Node;

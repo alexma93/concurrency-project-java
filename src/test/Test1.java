@@ -30,7 +30,7 @@ public class Test1 {
 	@Before
 	public void setup(){
 		nProc = java.lang.Runtime.getRuntime().availableProcessors();
-		singleNode = new simpleNode(1,null,null);
+		singleNode = new SimpleNode(1,null,null);
 		simpleTree = TreeUtility.balancedTree(3);
 		balancedOrderedTree = TreeUtility.balancedOrderedTree(4);
 		buffer = new LinkedBlockingQueue<Node>();
@@ -188,7 +188,7 @@ public class Test1 {
 			}
 		});
 		//un nodo con un solo figlio
-		buffer.offer(new simpleNode(1,new simpleNode(1),null));
+		buffer.offer(new SimpleNode(1,new SimpleNode(1),null));
 
 		executor.submit(new OnerousSumRun(buffer,2,counter));
 		Thread.sleep(50);

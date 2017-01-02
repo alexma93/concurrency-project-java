@@ -20,7 +20,7 @@ public class Test3 {
 	
 	@Before
 	public void setup(){
-		singleNode = new simpleNode(1,null,null);
+		singleNode = new SimpleNode(1,null,null);
 		simpleTree = TreeUtility.balancedTree(3);
 		balancedOrderedTree = TreeUtility.balancedOrderedTree(4);
 		buffer = new LinkedBlockingQueue<Node>();
@@ -29,7 +29,7 @@ public class Test3 {
 	}
 	
 	@Test
-	public void concurrentSumSingleNode() throws Exception {
+	public void concurrentSumSingleNode() {
 		int sum;
 		try {
 			sum = pool.invoke(new OnerousSumForkJoin(singleNode));
@@ -39,7 +39,7 @@ public class Test3 {
 	
 
 	@Test
-	public void concurrentSumSimpleTree() throws Exception {
+	public void concurrentSumSimpleTree() {
 		int sum;
 		try {
 			sum = pool.invoke(new OnerousSumForkJoin(simpleTree));
@@ -48,28 +48,19 @@ public class Test3 {
 	}
 	
 	@Test
-	public void concurrentSumOrderedTree() throws Exception {
-		int sum;
-		try {
-			sum = pool.invoke(new OnerousSumForkJoin(balancedOrderedTree));
-		} finally {pool.shutdown();}
-		assertEquals(sum,31*32/2);
-	}
-	
-	@Test
-	public void binaryTreeAdderOrderedTree() throws Exception {
+	public void binaryTreeAdderOrderedTree() {
 		int sum = adder.computeOnerousSum(balancedOrderedTree);
 		assertEquals(sum,31*32/2);
 	}
 	
 	@Test
-	public void binaryTreeAdderUnbalancedLeftTree() throws Exception {
+	public void binaryTreeAdderUnbalancedLeftTree() {
 		int sum = adder.computeOnerousSum(TreeUtility.unbalancedLeftTree(4));
 		assertEquals(sum,12);
 	}
 	
 	@Test
-	public void binaryTreeAdderUnbalancedRigthTree() throws Exception {
+	public void binaryTreeAdderUnbalancedRigthTree() {
 		int sum = adder.computeOnerousSum(TreeUtility.unbalancedRightTree(4));
 		assertEquals(sum,12);
 	}

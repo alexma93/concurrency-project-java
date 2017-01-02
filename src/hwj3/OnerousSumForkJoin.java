@@ -17,7 +17,6 @@ public class OnerousSumForkJoin extends RecursiveTask<Integer> {
 	@Override
 	public Integer compute() {
 		int sum = 0;
-		int partial;
 		OnerousSumForkJoin taskSx = null;
 		OnerousSumForkJoin taskDx = null;
 		if(root.getSx()!=null) {
@@ -29,8 +28,7 @@ public class OnerousSumForkJoin extends RecursiveTask<Integer> {
 			taskDx.fork();
 		}
 		FakeProcessor proc = new FakeProcessor(2000);
-		partial = proc.onerousFunction(root.getValue());
-		sum += partial;
+		sum += proc.onerousFunction(root.getValue());
 		if(taskSx!=null)
 			sum += taskSx.join();
 		if(taskDx!=null)

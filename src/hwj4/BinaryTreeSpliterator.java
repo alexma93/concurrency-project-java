@@ -10,7 +10,7 @@ import treeAdder.Node;
 public class BinaryTreeSpliterator implements Spliterator<Node> {
 	private Node root; //nodo corrente, sul quale si prova a splittare
 	private List<Node> list; //lista di nodi da elaborare
-	
+
 	public BinaryTreeSpliterator(Node n,List<Node> list) {
 		this.root = n;
 		this.list = list;
@@ -67,4 +67,11 @@ public class BinaryTreeSpliterator implements Spliterator<Node> {
 		return 0;
 	}
 
+	public Node getRoot() {
+		return root;
+	}
+
+	public List<Node> getList() {
+		return list;
+	}
 }

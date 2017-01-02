@@ -32,7 +32,7 @@ public class Test2 {
 	@Before
 	public void setup(){
 		nProc = java.lang.Runtime.getRuntime().availableProcessors();
-		singleNode = new simpleNode(1,null,null);
+		singleNode = new SimpleNode(1,null,null);
 		simpleTree = TreeUtility.balancedTree(3);
 		balancedOrderedTree = TreeUtility.balancedOrderedTree(4);
 		dequeList = new ArrayList<>(this.nProc);
@@ -46,6 +46,7 @@ public class Test2 {
 		adder = new BinaryTreeAdderLimitedBuffer(nProc);
 	}
 	
+	// TEST SIMILI ALLA PARTE 1 +  ALTRI TESTI SUL WORKSTEALING 
 	@Test
 	public void serialSumEmptyQueue() throws Exception {
 		assertEquals(serialOnerousSum.call(),new Integer(0));
@@ -208,7 +209,7 @@ public class Test2 {
 		dek.offer(singleNode);
 		list.add(dek);
 		//un nodo con un solo figlio
-		dek.offer(new simpleNode(1,new simpleNode(1),null));
+		dek.offer(new SimpleNode(1,new SimpleNode(1),null));
 
 		executor.submit(new OnerousSumRunLimited(dek,2,counter,list));
 		Thread.sleep(50);
@@ -236,6 +237,59 @@ public class Test2 {
 		assertEquals(sum,12);
 	}
 	
+	// TEST SUL WORK STEALING
+	
+	@Test
+	public void workStealingBetweenTwoBuffers() {
+		BlockingDeque<Node> buffer1 = dequeList.get(0);
+		BlockingDeque<Node> buffer2 = dequeList.get(nProc-1);
+		buffer2.offer(singleNode);
+		OnerousSumRunLimited callable = new OnerousSumRunLimited(buffer1,nProc,null,dequeList);
+		callable.workStealing();
+		
+		assertFalse(buffer1.isEmpty());
+		
+	}
+	
+	@Test
+	public void aThreadStealWork() throws Exception {
+		BlockingDeque<Node> buffer1 = dequeList.get(0);
+		BlockingDeque<Node> buffer2 = dequeList.get(nProc-1);
+		buffer1.offer(simpleTree);
+		buffer2.offer(singleNode);
+		
+		
+		Future<Integer> f = executor.submit(new OnerousSumRunLimited(buffer1,1,counter,dequeList));
+		Thread.sleep(50);
+		assertEquals((int)f.get(),16); //15 + 1(stolen)
+		assertTrue(buffer2.isEmpty());
+		
+		executor.shutdown();
+	}
+	
+	// due thread, uno col buffer molto pieno, l'altro gli ruba il lavoro in cima alla lista
+	@Test
+	public void concurrentThreadsStealOnTop() throws Exception {
+		List<BlockingDeque<Node>> bufferList = new ArrayList<>(2);
+		BlockingDeque<Node> buffer1 = new LinkedBlockingDeque<>();
+		BlockingDeque<Node> buffer2 = new LinkedBlockingDeque<>();
+		bufferList.add(buffer1);
+		bufferList.add(buffer2);
+		buffer1.offer(new SimpleNode(10000,null,null)); // sum = 10000
+		buffer1.offer(TreeUtility.balancedTree(8));
+		buffer2.offer(simpleTree); 
+		/* mentre il 1 calcola sull'albero alto 8, il 2 calcola sul suo albero 
+		 * semplice e poi ruba il nodo da 10000 che era in testa alla lista */
+		
+		executor.submit(new OnerousSumRunLimited(buffer1,2,counter,bufferList));
+		Future<Integer> f = executor.submit(new OnerousSumRunLimited(buffer2,2,counter,bufferList));
+		
+		Thread.sleep(500);
+		int result = f.get();
+		assertTrue(result>= 10000);
+		
+		executor.shutdown();
+	}
 	
 	
 }

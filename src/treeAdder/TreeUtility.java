@@ -12,7 +12,7 @@ public class TreeUtility {
 			Node sx,dx;
 			sx = balancedTree(height-1);
 			dx = balancedTree(height-1);
-			root = new simpleNode(1,sx,dx);
+			root = new SimpleNode(1,sx,dx);
 		}
 		return root;
 	}
@@ -24,7 +24,7 @@ public class TreeUtility {
 			Node sx,dx;
 			sx = unbalancedLeftTree(height-1);
 			dx = unbalancedLeftTree(height-2);
-			root = new simpleNode(1,sx,dx);
+			root = new SimpleNode(1,sx,dx);
 		}
 		return root;
 	}
@@ -36,7 +36,7 @@ public class TreeUtility {
 			Node sx,dx;
 			sx = unbalancedRightTree(height-2);
 			dx = unbalancedRightTree(height-1);
-			root = new simpleNode(1,sx,dx);
+			root = new SimpleNode(1,sx,dx);
 		}
 		return root;
 	}
@@ -54,7 +54,7 @@ public class TreeUtility {
 			val[0]++;
 			sx = bODSupport(height-1,val);
 			dx = bODSupport(height-1,val);
-			root = new simpleNode(v,sx,dx);
+			root = new SimpleNode(v,sx,dx);
 		}
 		return root;
 	}

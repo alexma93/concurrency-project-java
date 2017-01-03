@@ -32,13 +32,12 @@ public class BinaryTreeAdderLimitedBuffer implements BinaryTreeAdder {
 		
 		dequeList.get(0).offer(root); //metto la radice nella prima deque
 		
-		List<Future<Integer>> futureResults = new ArrayList<>(this.nProc);
 		List<Callable<Integer>> tasks = new ArrayList<>(this.nProc);
 		for(BlockingDeque<Node> deque : dequeList)
 			tasks.add(new OnerousSumRunLimited(deque,this.nProc,counter,dequeList));
 		int sum = 0;
 		try {
-			futureResults = ex.invokeAll(tasks);
+			List<Future<Integer>> futureResults = ex.invokeAll(tasks);
 			for(Future<Integer> fu: futureResults)
 				sum += fu.get();
 		} catch(Exception except){except.printStackTrace();	}

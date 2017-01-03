@@ -9,8 +9,8 @@ public class Speedup2 {
 		Node tree;
 		int serialSum, concurrentSum ;
 		double startTime, endTime, serialTime, concurrentTime;
-		int nProc = java.lang.Runtime.getRuntime().availableProcessors();
 		BinaryTreeAdder serialAdder, concurrentAdder;
+		int nProc = java.lang.Runtime.getRuntime().availableProcessors();
 		serialAdder = new BinaryTreeAdderSerial();
 		concurrentAdder = new BinaryTreeAdderLimitedBuffer(nProc);
 		

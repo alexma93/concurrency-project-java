@@ -54,10 +54,12 @@ public class BinaryTreeSpliterator implements Spliterator<Node> {
 			Node sin = root.getSx();
 			this.list.add(this.root);
 			this.root = sin;
+			return trySplit();
 		} else if (root.getDx()!=null) {
 			Node d = root.getDx();
 			this.list.add(this.root);
 			this.root = d;
+			return trySplit();
 		}
 		return null;
 	}

@@ -27,13 +27,12 @@ public class BinaryTreeAdderImpl implements BinaryTreeAdder {
 		LinkedBlockingQueue<Node> buffer = new LinkedBlockingQueue<>();
 		buffer.offer(root);
 		
-		List<Future<Integer>> futureResults = new ArrayList<>(this.nProc);
 		List<Callable<Integer>> tasks = new ArrayList<>(this.nProc);
 		for(int i=0; i<this.nProc; i++)
 			tasks.add(new OnerousSumRun(buffer,nProc,counter));
 		int sum = 0;
 		try {
-			futureResults = ex.invokeAll(tasks);
+			List<Future<Integer>> futureResults = ex.invokeAll(tasks);
 			for(Future<Integer> fu: futureResults)
 				sum += fu.get();
 		} catch(Exception except){except.printStackTrace();	}

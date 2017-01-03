@@ -3,9 +3,6 @@ import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 import java.util.Spliterator;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.junit.*;
 
@@ -16,10 +13,8 @@ import treeAdder.*;
 public class Test4 {
 
 	Node singleNode, smallTree, simpleTree, balancedOrderedTree;
-	BlockingQueue<Node> buffer;
-	ForkJoinPool pool;
 	BinaryTreeAdder adder;
-	BinaryTreeSpliterator spliterator;
+	BinaryTreeSpliterator spliteratorSingleNode;
 	
 	@Before
 	public void setup(){
@@ -27,59 +22,56 @@ public class Test4 {
 		smallTree = TreeUtility.balancedTree(1);
 		simpleTree = TreeUtility.balancedTree(3);
 		balancedOrderedTree = TreeUtility.balancedOrderedTree(4);
-		buffer = new LinkedBlockingQueue<Node>();
-		pool = new ForkJoinPool(); 
 		adder = new BinaryTreeAdderJ8();
+		spliteratorSingleNode = new BinaryTreeSpliterator(singleNode,new LinkedList<>());
 	}
 	
 	// TEST SULLO SPLITERATOR
 	
 	@Test
 	public void trySplitSingleNode() throws Exception {
-		spliterator = new BinaryTreeSpliterator(singleNode,new LinkedList<>());
-		Spliterator<Node> spliterator2 = spliterator.trySplit();
+		Spliterator<Node> spliterator2 = spliteratorSingleNode.trySplit();
 		assertEquals(spliterator2,null);
 	}
 	
 	@Test
 	public void trySplitSmallTree() throws Exception {
-		spliterator = new BinaryTreeSpliterator(smallTree,new LinkedList<>());
+		BinaryTreeSpliterator spliterator = new BinaryTreeSpliterator(smallTree,new LinkedList<>());
 		BinaryTreeSpliterator spliterator2 = (BinaryTreeSpliterator) spliterator.trySplit();
 		assertEquals(spliterator.getRoot(),smallTree.getSx());
 		assertEquals(spliterator2.getRoot(),smallTree.getDx());
 		assertTrue(spliterator2.getList().contains(smallTree));
 		assertFalse(spliterator.getList().contains(smallTree));
 	}
-	// singolo figlio sul trysplit e' un caso molto semplice (non lo testo)
+	// nodo con singolo figlio sul trysplit e' un caso molto semplice (non lo testo)
 	
 	@Test
 	public void tryAdvanceSingleNode() throws Exception {
-		spliterator = new BinaryTreeSpliterator(singleNode,new LinkedList<>());
-		boolean advanced = spliterator.tryAdvance(n -> n.getValue());
+		boolean advanced = spliteratorSingleNode.tryAdvance(n -> n.getValue());
 		assertTrue(advanced);
-		assertEquals(spliterator.getList().size(),0);
-		assertEquals(spliterator.getRoot(),null);
+		assertEquals(spliteratorSingleNode.getList().size(),0);
+		assertEquals(spliteratorSingleNode.getRoot(),null);
 	}
 	
 	@Test
 	public void tryAdvanceEmptyList() throws Exception {
-		spliterator = new BinaryTreeSpliterator(singleNode,new LinkedList<>());
-		spliterator.tryAdvance(n -> n.getValue());
-		boolean advanced = spliterator.tryAdvance(n -> n.getValue());
+		spliteratorSingleNode.tryAdvance(n -> n.getValue());
+		// la lista ora e' vuota
+		boolean advanced = spliteratorSingleNode.tryAdvance(n -> n.getValue());
 		assertFalse(advanced);
 	}
 	
 	// Test generali
 	
 	@Test
-	public void concurrentSumSingleNode() throws Exception {
+	public void binaryTreeAdderSingleNode() throws Exception {
 		int sum = adder.computeOnerousSum(singleNode);
 		assertEquals(sum,1);
 	}
 	
 
 	@Test
-	public void concurrentSumSimpleTree() throws Exception {
+	public void binaryTreeAdderSimpleTree() throws Exception {
 		int sum = adder.computeOnerousSum(simpleTree);
 		assertEquals(sum,15);
 	}

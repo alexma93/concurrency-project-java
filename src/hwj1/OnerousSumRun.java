@@ -9,7 +9,7 @@ import treeAdder.Node;
 public class OnerousSumRun implements Callable<Integer> {
 
 	private BlockingQueue<Node> buffer;
-	// so che tutti i thread hanno concluso, quando counter = numProc. counter e' condiviso
+	// so che tutti i thread hanno concluso quando counter = numProc. counter e' condiviso
 	private int numProc; 
 	private AtomicInteger counter;
 
@@ -19,8 +19,6 @@ public class OnerousSumRun implements Callable<Integer> {
 		this.counter = c;
 	}
 
-	//TODO: probabile devo togliere le wait e notify. servono per svegliare i thread quando in realta'  
-	// non e' vuoto. i thread devono dormire perche' devo evitare attese attive
 	@Override
 	public Integer call() throws Exception {
 		int sum = 0;

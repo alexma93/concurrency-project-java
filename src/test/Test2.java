@@ -47,10 +47,10 @@ public class Test2 {
 	}
 	
 	// TEST SIMILI ALLA PARTE 1 +  ALTRI TESTI SUL WORKSTEALING 
+	
 	@Test
 	public void serialSumEmptyQueue() throws Exception {
 		assertEquals(serialOnerousSum.call(),new Integer(0));
-
 	}
 	
 	@Test
@@ -63,13 +63,12 @@ public class Test2 {
 	public void concurrentSumSingleNode() throws Exception {
 		dequeList.get(0).offer(singleNode);
 		
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
 		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
 		for(BlockingDeque<Node> deque : dequeList)
 			tasks.add(new OnerousSumRunLimited(deque,nProc,counter,dequeList));
 		
 		// the execution order is controlled by the JVM Thread Pool
-		futureResults = executor.invokeAll(tasks);
+		List<Future<Integer>> futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -90,13 +89,12 @@ public class Test2 {
 	public void concurrentSumSimpleTree() throws Exception {
 		dequeList.get(0).offer(simpleTree);
 		
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
 		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
 		for(BlockingDeque<Node> deque : dequeList)
 			tasks.add(new OnerousSumRunLimited(deque,nProc,counter,dequeList));
 		
 		// the execution order is controlled by the JVM Thread Pool
-		futureResults = executor.invokeAll(tasks);
+		List<Future<Integer>> futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -118,13 +116,12 @@ public class Test2 {
 	public void concurrentSumOrderedTree() throws Exception {
 		dequeList.get(0).offer(balancedOrderedTree);
 		
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
 		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
 		for(BlockingDeque<Node> deque : dequeList)
 			tasks.add(new OnerousSumRunLimited(deque,nProc,counter,dequeList));
 		
 		// the execution order is controlled by the JVM Thread Pool
-		futureResults = executor.invokeAll(tasks);
+		List<Future<Integer>> futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -146,12 +143,14 @@ public class Test2 {
 		Thread.sleep(50);
 		deque.offer(balancedOrderedTree);
 		Thread.sleep(50);
-		asleep = deque.isEmpty();
+		// il thread sta in wait, quindi il buffer rimane pieno
+		asleep = !deque.isEmpty();
 		
 		synchronized (this.counter) { this.counter.notify(); }
 		Thread.sleep(50);
 		awake = deque.isEmpty();
 		
+		// faccio terminare il thread
 		synchronized (this.counter) { 
 			this.counter.incrementAndGet();
 			this.counter.notify(); 
@@ -159,7 +158,7 @@ public class Test2 {
 		sum += f1.get();
 		executor.shutdown();
 		
-		assertFalse(asleep);
+		assertTrue(asleep);
 		assertTrue(awake);
 		assertEquals(sum,31*32/2);
 	}
@@ -183,6 +182,7 @@ public class Test2 {
 		dek.offer(singleNode);
 		list.add(dek);
 		
+		// il quarto thread, elabora l'unico nodo e sveglia gli altri  per terminare
 		f4 = executor.submit(new OnerousSumRunLimited(dek,4,counter,list));
 		Thread.sleep(50);
 		for(Future<Integer> fu: futureResults)
@@ -192,7 +192,7 @@ public class Test2 {
 		executor.shutdown();
 	}
 
-// un thread aggiunge un nodo nel buffer e sveglia un altro thread
+	// un thread aggiunge un nodo nel buffer e sveglia un altro thread
 	@Test
 	public void newNodeInBufferWakeUpSomeone() throws Exception {
 		Future<Integer> f;
@@ -211,6 +211,7 @@ public class Test2 {
 		//un nodo con un solo figlio
 		dek.offer(new SimpleNode(1,new SimpleNode(1),null));
 
+		Thread.sleep(50);
 		executor.submit(new OnerousSumRunLimited(dek,2,counter,list));
 		Thread.sleep(50);
 		assertEquals((int)f.get(),1);
@@ -248,7 +249,6 @@ public class Test2 {
 		callable.workStealing();
 		
 		assertFalse(buffer1.isEmpty());
-		
 	}
 	
 	@Test
@@ -257,7 +257,6 @@ public class Test2 {
 		BlockingDeque<Node> buffer2 = dequeList.get(nProc-1);
 		buffer1.offer(simpleTree);
 		buffer2.offer(singleNode);
-		
 		
 		Future<Integer> f = executor.submit(new OnerousSumRunLimited(buffer1,1,counter,dequeList));
 		Thread.sleep(50);
@@ -275,7 +274,7 @@ public class Test2 {
 		BlockingDeque<Node> buffer2 = new LinkedBlockingDeque<>();
 		bufferList.add(buffer1);
 		bufferList.add(buffer2);
-		buffer1.offer(new SimpleNode(10000,null,null)); // sum = 10000
+		buffer1.offer(new SimpleNode(10000,null,null));
 		buffer1.offer(TreeUtility.balancedTree(8));
 		buffer2.offer(simpleTree); 
 		/* mentre il 1 calcola sull'albero alto 8, il 2 calcola sul suo albero 

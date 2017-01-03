@@ -1,12 +1,7 @@
 package test;
 import static org.junit.Assert.*;
-
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import org.junit.*;
-
+import java.util.concurrent.ForkJoinPool;
 import hwj3.BinaryTreeAdderForkJoin;
 import hwj3.OnerousSumForkJoin;
 import treeAdder.*;
@@ -14,7 +9,6 @@ import treeAdder.*;
 public class Test3 {
 
 	Node singleNode, simpleTree, balancedOrderedTree;
-	BlockingQueue<Node> buffer;
 	ForkJoinPool pool;
 	BinaryTreeAdder adder;
 	
@@ -23,7 +17,6 @@ public class Test3 {
 		singleNode = new SimpleNode(1,null,null);
 		simpleTree = TreeUtility.balancedTree(3);
 		balancedOrderedTree = TreeUtility.balancedOrderedTree(4);
-		buffer = new LinkedBlockingQueue<Node>();
 		pool = new ForkJoinPool(); 
 		adder = new BinaryTreeAdderForkJoin();
 	}

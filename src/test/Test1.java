@@ -43,12 +43,10 @@ public class Test1 {
 	@Test
 	public void serialSumEmptyQueue() throws Exception {
 		assertEquals(serialOnerousSum.call(),new Integer(0));
-
 	}
 	
 	@Test
 	public void serialSumSingleNode() throws Exception {
-		
 		buffer.offer(singleNode);
 		assertEquals(serialOnerousSum.call(),new Integer(1));
 	}
@@ -56,13 +54,12 @@ public class Test1 {
 	@Test
 	public void concurrentSumSingleNode() throws Exception {
 		buffer.offer(singleNode);
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
 		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
 		for(int i=0; i<nProc; i++)
 			tasks.add(new OnerousSumRun(buffer,nProc,counter));
 		
 		// the execution order is controlled by the JVM Thread Pool
-		futureResults = executor.invokeAll(tasks);
+		List<Future<Integer>> futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -75,7 +72,6 @@ public class Test1 {
 	
 	@Test
 	public void serialSumSimpleTree() throws Exception {
-		
 		buffer.offer(simpleTree);
 		assertEquals(serialOnerousSum.call(),new Integer(15));
 	}
@@ -83,13 +79,13 @@ public class Test1 {
 	@Test
 	public void concurrentSumSimpleTree() throws Exception {
 		buffer.offer(simpleTree);
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);
+		
 		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
 		for(int i=0; i<nProc; i++)
 			tasks.add(new OnerousSumRun(buffer,nProc,counter));
 		
 		// the execution order is controlled by the JVM Thread Pool
-		futureResults = executor.invokeAll(tasks);
+		List<Future<Integer>> futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -109,13 +105,12 @@ public class Test1 {
 	
 	@Test
 	public void concurrentSumOrderedTree() throws Exception {
-		buffer.offer(balancedOrderedTree);
-		List<Future<Integer>> futureResults = new ArrayList<>(nProc);	
+		buffer.offer(balancedOrderedTree);	
 		List<Callable<Integer>> tasks = new ArrayList<>(nProc);
 		for(int i=0; i<nProc; i++)
 			tasks.add(new OnerousSumRun(buffer,nProc,counter));
 		
-		futureResults = executor.invokeAll(tasks);
+		List<Future<Integer>> futureResults = executor.invokeAll(tasks);
 		int sum = 0;
 		for(Future<Integer> fu: futureResults)
 			sum += fu.get();
@@ -128,20 +123,21 @@ public class Test1 {
 	public void ifBufferEmptyThreadWait() throws Exception {
 		Future<Integer> f1;
 		boolean asleep, awake;
-		
-		f1 = executor.submit(new OnerousSumRun(buffer,2,counter));
 		int sum = 0;
 		
+		f1 = executor.submit(new OnerousSumRun(buffer,2,counter));
+
 		Thread.sleep(50);
 		buffer.offer(balancedOrderedTree);
 		Thread.sleep(50);
-		asleep = this.buffer.isEmpty();
+		// il thread sta in wait, quindi il buffer rimane pieno
+		asleep = !this.buffer.isEmpty();
 		
 		synchronized (this.counter) { this.counter.notify(); }
 		Thread.sleep(50);
 		awake = this.buffer.isEmpty();
 		
-		
+		// faccio terminare il thread
 		synchronized (this.counter) { 
 			this.counter.incrementAndGet();
 			this.counter.notify(); 
@@ -149,7 +145,7 @@ public class Test1 {
 		sum += f1.get();
 		executor.shutdown();
 		
-		assertFalse(asleep);
+		assertTrue(asleep);
 		assertTrue(awake);
 		assertEquals(sum,31*32/2);
 	}
@@ -167,6 +163,7 @@ public class Test1 {
 		Thread.sleep(50);
 		buffer.offer(singleNode);
 		
+		// il quarto thread, elabora l'unico nodo nel buffer e sveglia gli altri  per terminare
 		f4 = executor.submit(new OnerousSumRun(buffer,4,counter));
 		Thread.sleep(50);
 		for(Future<Integer> fu: futureResults)
@@ -190,6 +187,7 @@ public class Test1 {
 		//un nodo con un solo figlio
 		buffer.offer(new SimpleNode(1,new SimpleNode(1),null));
 
+		Thread.sleep(50);
 		executor.submit(new OnerousSumRun(buffer,2,counter));
 		Thread.sleep(50);
 		assertEquals((int)f.get(),1);
